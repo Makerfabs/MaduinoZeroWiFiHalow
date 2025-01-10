@@ -1,6 +1,7 @@
 /*
 Arduino IDE v1.8.19
 Board: arduino_zero_native v1.8.2
+Library: DHT sensor library v1.4.6
  */
 #include <Arduino.h>
 #include <DHT.h>
