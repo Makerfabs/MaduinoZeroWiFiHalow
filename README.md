@@ -32,4 +32,8 @@ This demo program allows users to send AT commands to the module through the ser
 
 This demo sets one board to AP mode, which is responsible for receiving temperature and humidity data; And the other board is set to STA mode, which connects to the DHT11 for collecting temperature and humidity data and sending the data to the AP.
 
+## Environment
 
+Arduino IDE v1.8.19
+Board: arduino_zero_native v1.8.2
+Library: DHT sensor library v1.4.6
