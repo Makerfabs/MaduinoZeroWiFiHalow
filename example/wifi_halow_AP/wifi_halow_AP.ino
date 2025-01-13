@@ -13,6 +13,9 @@ Board: arduino_zero_native v1.8.2
 #define RESPONE_OK 1
 #define RESPONE_ERROR 2
 
+//#define Frequency 860
+#define Frequency 900
+
 int8_t At_Response(uint32_t timeouts,String &data)
 {
     int index = 0;
@@ -71,7 +74,13 @@ bool TX_AH_AP_Mode_init(void)
         SerialMon.println("AT+SYSDBG ERROR");
     }
 
-    sendAT("+CHAN_LIST=8600,8680,8760");
+    #if Frequency == 860
+        sendAT("+CHAN_LIST=8600,8680,8760");
+    #elif Frequency == 900
+        sendAT("+CHAN_LIST=9000,9080,9160");
+    #else
+        SerialMon.println("Frequency not defined or invalid!");
+    #endif
     if (At_Response(1000,AT_reponse_data) == RESPONE_OK)
         SerialMon.println("AT+CHAN_LIST SUCCEED");
     else
@@ -166,6 +175,20 @@ void loop(void)
                 String substr = rssi_data.substring(startIndex + 1, endIndex);
                 strcpy(rssi_buf, substr.c_str());
             }
+
+            /*String send_data = "11111100000000";
+            String data = String(send_indx);
+            int len = send_data.length() + data.length();
+            String cmd = "+TXDATA=" + String(len);
+
+            send_data = send_data + data;
+
+            sendAT(cmd);
+            if (At_Response(1000,AT_reponse_data) == RESPONE_OK) 
+            {
+                SerialTX_AH.write(send_data.c_str());
+            }
+            send_indx++;*/
         }
     }
     if(recv_str.equals("") == 0) 

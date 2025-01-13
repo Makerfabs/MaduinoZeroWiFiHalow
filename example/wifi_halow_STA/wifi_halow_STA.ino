@@ -1,7 +1,6 @@
 /*
 Arduino IDE v1.8.19
 Board: arduino_zero_native v1.8.2
-Library: DHT sensor library v1.4.6
  */
 #include <Arduino.h>
 #include <DHT.h>
@@ -19,6 +18,9 @@ float h,t;
 
 #define RESPONE_OK 1
 #define RESPONE_ERROR 2
+
+//#define Frequency 860
+#define Frequency 900
 
 int8_t At_Response(uint32_t timeouts,String &data)
 {
@@ -78,7 +80,13 @@ bool TX_AH_STA_Mode_init(void)
         SerialMon.println("AT+SYSDBG ERROR");
     }
 
-    sendAT("+CHAN_LIST=8600,8680,8760");
+    #if Frequency == 860
+        sendAT("+CHAN_LIST=8600,8680,8760");
+    #elif Frequency == 900
+        sendAT("+CHAN_LIST=9000,9080,9160");
+    #else
+        SerialMon.println("Frequency not defined or invalid!");
+    #endif
     if (At_Response(1000,AT_reponse_data) == RESPONE_OK)
         SerialMon.println("AT+CHAN_LIST SUCCEED");
     else
@@ -150,6 +158,8 @@ void loop(void)
         
         h = dht.readHumidity();
         t = dht.readTemperature();
+        //h=22.22;
+        //t=24.11;
         
         String data;
         sendAT("+CONN_STATE");
@@ -178,8 +188,12 @@ void loop(void)
         }
         String send_data = "11111100000000";
         send_data += "\nT=" + String(t, 2) + ", H=" + String(h, 2) + "\n";
+        //String data = String(send_indx);
+        //int len = send_data.length() + data.length();
         int len = send_data.length();
         String cmd = "+TXDATA=" + String(len);
+
+        //send_data = send_data + data;
 
         sendAT(cmd);
         if (At_Response(1000,AT_reponse_data) == RESPONE_OK) 
