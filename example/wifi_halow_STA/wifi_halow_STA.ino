@@ -2,6 +2,7 @@
 Arduino IDE v1.8.19
 Board: arduino_zero_native v1.8.2
  */
+
 #include <Arduino.h>
 #include <DHT.h>
 
@@ -30,6 +31,7 @@ int8_t At_Response(uint32_t timeouts,String &data)
     const char *r2 = "ERROR";
     const char *r3 = "+CONNECTED";
     const char *r4 = "+DISCONNECT";
+//    String data = "";
 
     do {
         while (SerialTX_AH.available() > 0) 
@@ -124,7 +126,7 @@ bool TX_AH_STA_Mode_init(void)
 
     sendAT("+MODE=STA");
     if (At_Response(1000,AT_reponse_data) == RESPONE_OK)
-        SerialMon.println("AT+MODE=SAT SUCCEED");
+        SerialMon.println("AT+MODE=STA SUCCEED");
     else
     {
         at_cnt++;
@@ -147,20 +149,14 @@ void setup(void)
 uint32_t rssi_tick = 0;
 bool tx_ah_conn_status = false;
 char rssi_buf[16];
-String recv_str = "";
-char recv_data[128] = {0};
 
 void loop(void)
 {
     if (millis() - rssi_tick > 3000)
-    {   
+    {
         rssi_tick = millis();
-        
         h = dht.readHumidity();
         t = dht.readTemperature();
-        //h=22.22;
-        //t=24.11;
-        
         String data;
         sendAT("+CONN_STATE");
         if (At_Response(1000,AT_reponse_data) == RESPONE_OK) 
@@ -185,21 +181,27 @@ void loop(void)
                 String substr = rssi_data.substring(startIndex + 1, endIndex);
                 strcpy(rssi_buf, substr.c_str());
             }
-        }
-        String send_data = "11111100000000";
-        send_data += "\nT=" + String(t, 2) + ", H=" + String(h, 2) + "\n";
-        //String data = String(send_indx);
-        //int len = send_data.length() + data.length();
-        int len = send_data.length();
-        String cmd = "+TXDATA=" + String(len);
 
-        //send_data = send_data + data;
+            String send_data = "11111100000000";
+            send_data += "\nT=" + String(t, 2) + ", H=" + String(h, 2) + "\n";
+            int len = send_data.length();
+            String cmd = "+TXDATA=" + String(len);
 
-        sendAT(cmd);
-        if (At_Response(1000,AT_reponse_data) == RESPONE_OK) 
-        {
-            SerialTX_AH.write(send_data.c_str());
+            sendAT(cmd);
+            if (At_Response(1000,AT_reponse_data) == RESPONE_OK) 
+            {
+                SerialTX_AH.write(send_data.c_str());
+            }
         }
+
+    }  
+    while (SerialTX_AH.available())
+    {
+        SerialMon.write(SerialTX_AH.read());
+    }
+    while (SerialMon.available())
+    {
+        SerialTX_AH.write(SerialMon.read());
     }
     delay(1);
 }
